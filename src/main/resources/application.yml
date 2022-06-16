@@ -1,14 +1,5 @@
 server:
-  port:9000
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    instance:
-      hostname: localhost
+  port: 9000
 
 spring:
   application:
@@ -28,3 +19,22 @@ spring:
           uri: lb://BOOK-SERVICE
           predicates:
             - Path=/api/v1/books/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: BOOK-SERVICE
+                fallbackuri: forward:/bsFallback
+
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
